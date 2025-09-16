@@ -1,5 +1,5 @@
 import os
-import joblib
+import joblib 
 from src.train import train_model
 from src.predict import predict
 

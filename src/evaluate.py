@@ -1,46 +1,40 @@
-import joblib
-import os
+# src/evaluate.py
+import json
+import sys
+import pickle
 from sklearn.metrics import accuracy_score, precision_score, recall_score
-from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-
-REPORT_PATH = "reports/metrics_report.txt"
+from sklearn.datasets import load_iris
 
 def evaluate_model():
     # Load dataset
-    iris = load_iris()
-    X_train, X_test, y_train, y_test = train_test_split(
-        iris.data, iris.target, test_size=0.2, random_state=42
-    )
+    X, y = load_iris(return_X_y=True)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Check if trained model exists
-    if not os.path.exists("model.pkl"):
-        raise FileNotFoundError("❌ Trained model not found. Run train.py first.")
-
-    # Load model
-    model = joblib.load("model.pkl")
+    # Load trained model
+    with open("model.pkl", "rb") as f:
+        model = pickle.load(f)
 
     # Predictions
     y_pred = model.predict(X_test)
 
     # Metrics
-    acc = accuracy_score(y_test, y_pred)
-    prec = precision_score(y_test, y_pred, average="weighted", zero_division=0)
-    rec = recall_score(y_test, y_pred, average="weighted", zero_division=0)
+    metrics = {
+        "accuracy": accuracy_score(y_test, y_pred),
+        "precision": precision_score(y_test, y_pred, average="macro"),
+        "recall": recall_score(y_test, y_pred, average="macro"),
+    }
 
-    # Save report
-    os.makedirs("reports", exist_ok=True)
-    with open(REPORT_PATH, "w") as f:
-        f.write(f"Accuracy: {acc:.2f}\n")
-        f.write(f"Precision: {prec:.2f}\n")
-        f.write(f"Recall: {rec:.2f}\n")
+    # Save metrics report
+    with open("metrics.json", "w") as f:
+        json.dump(metrics, f, indent=4)
 
-    print(f"✅ Report saved at {REPORT_PATH}")
-    print(f"Accuracy: {acc:.2f}, Precision: {prec:.2f}, Recall: {rec:.2f}")
+    print("📊 Evaluation Metrics:", metrics)
 
-    # Fail pipeline if accuracy < 0.80
-    if acc < 0.80:
-        raise ValueError(f"❌ Accuracy below threshold: {acc:.2f}")
+    # Fail pipeline if accuracy < 80%
+    if metrics["accuracy"] < 0.8:
+        print("❌ Model accuracy below threshold (80%).")
+        sys.exit(1)
 
 if __name__ == "__main__":
     evaluate_model()

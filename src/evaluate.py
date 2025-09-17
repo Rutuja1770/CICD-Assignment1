@@ -1,23 +1,23 @@
 import joblib
-import numpy as np
+import os
 from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
-import os
 
 REPORT_PATH = "reports/metrics_report.txt"
 
 def evaluate_model():
-    # Load data
+    # Load dataset
     iris = load_iris()
     X_train, X_test, y_train, y_test = train_test_split(
         iris.data, iris.target, test_size=0.2, random_state=42
     )
 
-    # Load trained model
+    # Check if trained model exists
     if not os.path.exists("model.pkl"):
-        raise FileNotFoundError("Trained model not found. Run train.py first.")
+        raise FileNotFoundError("❌ Trained model not found. Run train.py first.")
 
+    # Load model
     model = joblib.load("model.pkl")
 
     # Predictions
@@ -38,7 +38,7 @@ def evaluate_model():
     print(f"✅ Report saved at {REPORT_PATH}")
     print(f"Accuracy: {acc:.2f}, Precision: {prec:.2f}, Recall: {rec:.2f}")
 
-    # Fail if accuracy < 0.80
+    # Fail pipeline if accuracy < 0.80
     if acc < 0.80:
         raise ValueError(f"❌ Accuracy below threshold: {acc:.2f}")
 

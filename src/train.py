@@ -1,17 +1,22 @@
-from sklearn.linear_model import LinearRegression
-import numpy as np
 import joblib
+from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
 
 def train_model():
-    # Example training data
-    X = np.array([[1], [2], [3], [4], [5]])
-    y = np.array([2, 4, 6, 8, 10])
+    # Load dataset
+    iris = load_iris()
+    X_train, X_test, y_train, y_test = train_test_split(
+        iris.data, iris.target, test_size=0.2, random_state=42
+    )
 
-    model = LinearRegression()
-    model.fit(X, y)
+    # Train classification model
+    model = LogisticRegression(max_iter=200)
+    model.fit(X_train, y_train)
 
+    # Save trained model
     joblib.dump(model, "model.pkl")
-    return model
+    print("✅ Model trained and saved as model.pkl")
 
 if __name__ == "__main__":
     train_model()
